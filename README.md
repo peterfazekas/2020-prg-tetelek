@@ -1,1 +1,1 @@
-# 2020-prg-tetelek
+# Programozási tételek megvalósítása
