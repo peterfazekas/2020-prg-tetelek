@@ -1,8 +1,10 @@
 package hu.prgitems;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class App {
 
@@ -13,10 +15,10 @@ public class App {
 
     public static void main(String[] args) {
         numbers = init();
-        print();
+        print(numbers);
         System.out.println("1. Sorozatszámatás: A számok összege: "
                 + summation());
-        int divisor = 100;
+        int divisor = 36;
         boolean hasItem = decision(divisor);
         System.out.println("2. Eldöntés: " + (hasItem ? "Van" : "Nincs") +
                 " a tömbben " + divisor + "-al osztható szám!");
@@ -25,82 +27,76 @@ public class App {
                     + (selection(divisor) + 1) + ". eleme osztható "
                     + divisor + "-al.");
         }
-        divisor = 3;
-        System.out.println("4. Keresés:  A sorozat "
-                + (search(divisor) + 1) + ". eleme osztható "
-                + divisor + "-al.");
+        final int anotherDivisor = 100;
+        String value = search(anotherDivisor)
+                .map(i -> " A sorozat " + i + " értékű eleme osztható " +
+                        anotherDivisor + "-al.")
+                .orElse("Nincs ilyen érték");
+        System.out.println("4. Keresés: " + value);
         System.out.println("5. Megszámolás: A sorozatban " + count(divisor) + "" +
                 " db " + divisor + "-al osztható szám van.");
-        int max = maxSelection();
-        System.out.println("6. Maximum kiválasztás: A sorozat " + (max + 1) +
-                ". eleme a legnagyobb, értéke: " + numbers.get(max));
+        System.out.println("6. Maximum kiválasztás: A sorozat legnagyobb, értékű eleme: " +
+                maxSelection());
+        System.out.println("A rendezetlen lista elemei:");
+        print(numbers);
+        System.out.println("A rendezett lista elemei:");
+        print(sort());
+
     }
 
     private static List<Integer> init() {
-        List<Integer> numbers = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < SIZE; i++) {
-            numbers.add(random.nextInt(BOUND) + 1);
-        }
-        return numbers;
+        return IntStream.range(0, SIZE)
+                .mapToObj(i -> random.nextInt(BOUND) + 1)
+                .collect(Collectors.toList());
     }
 
-    private static void print() {
-        for (int i = 0; i < SIZE; i++) {
-            System.out.printf("%4d", numbers.get(i));
-        }
+    private static void print(List<Integer> list) {
+        list.forEach(i -> System.out.printf("%4d", i));
         System.out.println();
     }
 
     private static int summation() {
-        int sum = 0;
-        for (int i = 0; i < SIZE; i++) {
-            sum += numbers.get(i); // sum = sum + numbers[i]
-        }
-        return sum;
+        return numbers.stream()
+                .mapToInt(i -> i)
+                .sum();
     }
 
     private static boolean decision(int divisor) {
-        int i = 0;
-        while (i < numbers.size() && !(numbers.get(i) % divisor == 0)) {
-            i++;
-        }
-        return i < numbers.size();
+        return numbers.stream()
+                .anyMatch(i -> i % divisor == 0);
     }
 
     private static int selection(int divisor) {
-        int i = 0;
-        while (!(numbers.get(i) % divisor == 0)) {
-            i++;
-        }
-        return i;
+        return numbers.stream()
+                .filter(i -> i % divisor == 0)
+                .findFirst()
+                .get();
     }
 
-    private static int search(int divisor) {
-        int i = 0;
-        while (i < numbers.size() && !(numbers.get(i) % divisor == 0)) {
-            i++;
-        }
-        return i < numbers.size() ? i : -1;
+    private static Optional<Integer> search(int divisor) {
+        return numbers.stream()
+                .filter(i -> i % divisor == 0)
+                .findFirst();
+
     }
 
-    private static int count(int divisor) {
-        int count = 0;
-        for (int i = 0; i < numbers.size(); i++) {
-            if (numbers.get(i) % divisor == 0) {
-                count++;
-            }
-        }
-        return count;
+    private static long count(int divisor) {
+        return numbers.stream()
+                .filter(i -> i % divisor == 0)
+                .count();
     }
 
     private static int maxSelection() {
-        int max = 0;
-        for (int i = 1; i < numbers.size(); i++) {
-            if (numbers.get(i) > numbers.get(max)) {
-                max = i;
-            }
-        }
-        return max;
+        return numbers.stream()
+                .mapToInt(i -> i)
+                .max()
+                .getAsInt();
+    }
+
+    private static List<Integer> sort() {
+        return numbers.stream()
+                .sorted()
+                .collect(Collectors.toList());
     }
 }
